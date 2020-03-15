@@ -8,7 +8,7 @@ namespace OthelloView
 	{
 		public void writeBock(String toWrite)
 		{
-			Console.Write(toWrite);
+			Console.WriteLine(toWrite);
 		}
 
 		public NumPair getPair(String prompt)
