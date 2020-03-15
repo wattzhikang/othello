@@ -4,15 +4,32 @@ namespace Othello
 {
     class Program
     {
+        enum Choices
+        {
+            FIRST,
+            SECOND,
+            THIRD
+        }
+
         static void Main(string[] args)
         {
-            View output = new View();
+            View terminal = new View();
 
-            output.sayHello();
+            MultipleChoice options = new MultipleChoice();
+            options.addOption("First", (int)Choices.FIRST);
+            options.addOption("Second", (int)Choices.SECOND);
+            options.addOption("Third", (int)Choices.THIRD);
 
-            NumPair pair = output.getPair("Please enter two numbers.");
+            terminal.multipleChoice(options, "Please which order you want to go in?");
 
-            output.writeBock("The two numbers you have entered are " + pair[0] + " and " + pair[1] + ".");
+            if (options.getSelection() == (int)Choices.FIRST)
+            {
+                terminal.writeBock("Success");
+            }
+            else
+            {
+                terminal.writeBock("Failure");
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace OthelloView
 {
@@ -116,6 +118,74 @@ namespace OthelloView
 			return new NumPair(num[0], num[1]);
 		}
 
+		public void multipleChoice(MultipleChoice options, String prompt)
+		{
+			Console.Write(prompt + ": ");
+
+			String[] opts = options.getOptions();
+			int i = 0;
+			foreach (String option in opts)
+			{
+				Console.Write("({0}) {1} ", i++, option);
+			}
+			Console.Write("\n");
+
+			String rawResult = null;
+			int resultIndex = -1;
+
+			bool good;
+			String errorMsg = null;
+			do
+			{
+				good = true;
+
+				rawResult = Console.ReadLine();
+
+				try
+				{
+					resultIndex = Convert.ToInt32(rawResult);
+				}
+				catch (System.OverflowException)
+				{
+					good = false;
+					errorMsg = "I guarantee you that there are not that many options. Please try again.";
+				}
+				catch (System.FormatException)
+				{
+					good = false;
+					errorMsg = "You have not entered a number. Please try again.";
+				}
+
+				if (!good)
+				{
+					Console.WriteLine(errorMsg);
+					continue;
+				}
+
+				try
+				{
+					options.select(opts[resultIndex]);
+				}
+				catch (IndexOutOfRangeException)
+				{
+					good = false;
+					errorMsg = "That is not an option. Please try again.";
+				}
+
+				if (!options.selected())
+				{
+					good = false;
+					errorMsg = "Selection failed. Please try again.";
+				}
+
+				if (!good)
+				{
+					Console.WriteLine(errorMsg);
+					continue;
+				}
+			} while (!good);
+		}
+
 		public void sayHello()
 		{
 			Console.WriteLine("Hello, World!");
@@ -136,6 +206,56 @@ namespace OthelloView
 		public int this[int index]
 		{
 			get { return pair[index]; }
+		}
+	}
+
+	class MultipleChoice
+	{
+		private Dictionary<String, int> options;
+
+		private bool selectionMade = false;
+		private int selection;
+
+		public MultipleChoice()
+		{
+			options = new Dictionary<string, int>();
+		}
+
+		public void addOption(String option, int index)
+		{
+			options.Add(option, index);
+		}
+
+		public String[] getOptions()
+		{
+			//this is cool syntax
+			return options.Select(key => key.Key).ToArray();
+		}
+
+		public bool select(String selection)
+		{
+			bool result;
+			try
+			{
+				this.selection = options[selection];
+				result = true;
+				selectionMade = true;
+			}
+			catch (KeyNotFoundException)
+			{
+				result = false;
+			}
+			return result;
+		}
+
+		public bool selected()
+		{
+			return selectionMade;
+		}
+
+		public int getSelection()
+		{
+			return selection;
 		}
 	}
 }
