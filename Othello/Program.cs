@@ -1,4 +1,4 @@
-﻿using System;
+﻿using OthelloView;
 
 namespace Othello
 {
@@ -6,7 +6,13 @@ namespace Othello
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            View output = new View();
+
+            output.sayHello();
+
+            NumPair pair = output.getPair("Please enter two numbers.");
+
+            output.writeBock("The two numbers you have entered are " + pair[0] + " and " + pair[1] + ".");
         }
     }
 }
