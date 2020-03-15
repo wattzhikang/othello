@@ -118,6 +118,48 @@ namespace OthelloView
 			return new NumPair(num[0], num[1]);
 		}
 
+		public int getInt(String prompt)
+		{
+			Console.WriteLine(prompt);
+
+			String rawInput = null;
+
+			int result = 0;
+
+			bool good;
+			String errMsg = null;
+			do
+			{
+				good = true;
+
+				rawInput = Console.ReadLine();
+
+				try
+				{
+					result = Convert.ToInt32(rawInput);
+				}
+				catch (OverflowException)
+				{
+					good = false;
+					errMsg = "Somehow, you have managed to enter in a number so large that "
+						+ "the computer cannot process it.";
+				}
+				catch (FormatException)
+				{
+					good = false;
+					errMsg = "You have not entered a valid number.";
+				}
+
+				if (!good)
+				{
+					Console.WriteLine(errMsg);
+					continue;
+				}
+			} while (!good);
+
+			return result;
+		}
+
 		public void multipleChoice(MultipleChoice options, String prompt)
 		{
 			Console.Write(prompt + ": ");

@@ -15,21 +15,23 @@ namespace Othello
         {
             View terminal = new View();
 
-            MultipleChoice options = new MultipleChoice();
-            options.addOption("First", (int)Choices.FIRST);
-            options.addOption("Second", (int)Choices.SECOND);
-            options.addOption("Third", (int)Choices.THIRD);
+            terminal.writeBock("You have selected " + terminal.getInt("Please enter a number."));
 
-            terminal.multipleChoice(options, "Please which order you want to go in?");
+            //MultipleChoice options = new MultipleChoice();
+            //options.addOption("First", (int)Choices.FIRST);
+            //options.addOption("Second", (int)Choices.SECOND);
+            //options.addOption("Third", (int)Choices.THIRD);
 
-            if (options.getSelection() == (int)Choices.FIRST)
-            {
-                terminal.writeBock("Success");
-            }
-            else
-            {
-                terminal.writeBock("Failure");
-            }
+            //terminal.multipleChoice(options, "Please which order you want to go in?");
+
+            //if (options.getSelection() == (int)Choices.FIRST)
+            //{
+            //    terminal.writeBock("Success");
+            //}
+            //else
+            //{
+            //    terminal.writeBock("Failure");
+            //}
         }
     }
 }
