@@ -214,6 +214,12 @@ namespace OthelloView
 					errorMsg = "That is not an option. Please try again.";
 				}
 
+				if (!good)
+				{
+					Console.WriteLine(errorMsg);
+					continue;
+				}
+
 				if (!options.selected())
 				{
 					good = false;
