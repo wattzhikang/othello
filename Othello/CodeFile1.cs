@@ -6,6 +6,15 @@ namespace OthelloView
 {
 	class View
 	{
+		private Othello.Controller controller;
+		private string sentinel;
+
+		public View(Othello.Controller controller, string shutdownMessage)
+		{
+			this.controller = controller;
+			this.sentinel = shutdownMessage;
+		}
+
 		public void writeBock(String toWrite)
 		{
 			Console.WriteLine(toWrite);
@@ -28,7 +37,7 @@ namespace OthelloView
 
 				Console.WriteLine(prompt);
 
-				rawInput = Console.ReadLine();
+				rawInput = readLine();
 
 				if (rawInput.Contains(","))
 				{
@@ -132,7 +141,7 @@ namespace OthelloView
 			{
 				good = true;
 
-				rawInput = Console.ReadLine();
+				rawInput = readLine();
 
 				try
 				{
@@ -181,7 +190,7 @@ namespace OthelloView
 			{
 				good = true;
 
-				rawResult = Console.ReadLine();
+				rawResult = readLine();
 
 				try
 				{
@@ -238,6 +247,17 @@ namespace OthelloView
 		{
 			Console.WriteLine("Hello, World!");
 		}
+
+		private string readLine()
+		{
+			string line = Console.ReadLine();
+			if (line.Equals(sentinel))
+			{
+				controller.shutDown();
+			}
+			return line;
+		}
+
 	}
 
 	class NumPair

@@ -5,6 +5,16 @@ namespace Othello
 {
     class Program
     {
+        static void Main(string[] args)
+        {
+            Controller game = new Controller();
+
+            game.runGame();
+        }
+    }
+
+    class Controller
+    {
         enum Choices
         {
             FIRST,
@@ -36,9 +46,14 @@ namespace Othello
 
 ";
 
-        static void Main(string[] args)
+        private string quitMessage = "Goodbye";
+
+        private View terminal;
+        private HAL9000 hal;
+
+        public void runGame()
         {
-            View terminal = new View();
+            terminal = new View(this, "q");
 
             terminal.writeBock(greeting);
 
@@ -47,7 +62,7 @@ namespace Othello
             );
             terminal.writeBock("jk this game will destroy you anyway\n");
 
-            HAL9000 hal = new HAL9000();
+            hal = new HAL9000();
 
             bool stillPlaying = true;
             do
@@ -55,7 +70,7 @@ namespace Othello
                 terminal.writeBock(render(hal.currentState()));
 
                 NumPair coordinates = terminal.getPair("Where would you like to move?");
-                while (!hal.makeMove(coordinates[0], coordinates[1])) ;
+                while (!hal.makeMove(coordinates[0], coordinates[1]))
                 {
                     terminal.writeBock("That location is not on the board. Please try again.");
                     coordinates = terminal.getPair("Where would you like to move?");
@@ -73,7 +88,7 @@ namespace Othello
             {
                 for (int y = 0; y < game.getYLength(); y++)
                 {
-                    switch (game[x,y])
+                    switch (game[x, y])
                     {
                         case Player.HUMAN:
                             view += "X";
@@ -90,6 +105,13 @@ namespace Othello
             }
 
             return view;
+        }
+
+        public void shutDown()
+        {
+            terminal.writeBock(quitMessage);
+            //shut down the game threads here as well
+            System.Environment.Exit(0);
         }
     }
 }
