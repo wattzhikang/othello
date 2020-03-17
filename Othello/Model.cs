@@ -154,11 +154,28 @@ namespace OthelloModel
 
 		public GameState(GameState previousState, Move nextMove)
 		{
+			copyPreviousState(previousState);
+
+			addMove(nextMove);
+		}
+
+		public GameState(GameState previousState, Move[] nextMoves)
+		{
+			copyPreviousState(previousState);
+
+			foreach (Move move in nextMoves)
+			{
+				addMove(move);
+			}
+		}
+
+		private void copyPreviousState(GameState previousState)
+		{
 			xLength = previousState.xLength;
 			yLength = previousState.yLength;
 
 			board = new Player[xLength, yLength];
-			humanPieces = previousState.humanPieces.Select(item => (Position) item.Clone()).ToList();
+			humanPieces = previousState.humanPieces.Select(item => (Position)item.Clone()).ToList();
 			computerPieces = previousState.computerPieces.Select(item => (Position)item.Clone()).ToList(); ;
 
 			for (int x = 0; x < xLength; x++)
@@ -168,8 +185,6 @@ namespace OthelloModel
 					board[x, y] = previousState.board[x, y];
 				}
 			}
-
-			addMove(nextMove);
 		}
 
 		private void addMove(Move move)
@@ -264,10 +279,14 @@ namespace OthelloModel
 		{
 			GameState game = new GameState(8, 8);
 
-			game = new GameState(game, new Move(new Position(3, 3), Player.HUMAN));
-			game = new GameState(game, new Move(new Position(4, 4), Player.HUMAN));
-			game = new GameState(game, new Move(new Position(3, 4), Player.COMPUTER));
-			game = new GameState(game, new Move(new Position(4, 3), Player.COMPUTER));
+			Move[] initialMoves = {
+				new Move(new Position(3, 3), Player.HUMAN),
+				new Move(new Position(4, 4), Player.HUMAN),
+				new Move(new Position(3, 4), Player.COMPUTER),
+				new Move(new Position(4, 3), Player.COMPUTER)
+			};
+
+			game = new GameState(game, initialMoves);
 
 			return game;
 		}
