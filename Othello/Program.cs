@@ -1,4 +1,5 @@
 ﻿using OthelloView;
+using OthelloModel;
 
 namespace Othello
 {
@@ -35,18 +36,6 @@ namespace Othello
 
 ";
 
-        private static string dummyBoard =
-@"
-........
-........
-........
-...XO...
-...OX...
-........
-........
-........
-";
-
         static void Main(string[] args)
         {
             View terminal = new View();
@@ -58,12 +47,49 @@ namespace Othello
             );
             terminal.writeBock("jk this game will destroy you anyway\n");
 
-            for (int turn = 0; turn < 10; turn++)
+            HAL9000 hal = new HAL9000();
+
+            bool stillPlaying = true;
+            do
             {
-                terminal.writeBock(dummyBoard);
+                terminal.writeBock(render(hal.currentState()));
 
                 NumPair coordinates = terminal.getPair("Where would you like to move?");
+                while (!hal.makeMove(coordinates[0], coordinates[1])) ;
+                {
+                    terminal.writeBock("That location is not on the board. Please try again.");
+                    coordinates = terminal.getPair("Where would you like to move?");
+                }
+            } while (stillPlaying);
+
+            terminal.writeBock("Goodbye");
+        }
+
+        private static string render(GameState game)
+        {
+            string view = "";
+
+            for (int x = 0; x < game.getXLength(); x++)
+            {
+                for (int y = 0; y < game.getYLength(); y++)
+                {
+                    switch (game[x,y])
+                    {
+                        case Player.HUMAN:
+                            view += "X";
+                            break;
+                        case Player.COMPUTER:
+                            view += "O";
+                            break;
+                        case Player.UNOCCUPIED:
+                            view += ".";
+                            break;
+                    }
+                }
+                view += "\n";
             }
+
+            return view;
         }
     }
 }
