@@ -72,7 +72,7 @@ namespace Othello
                 NumPair coordinates = terminal.getPair("Where would you like to move?");
                 while (!hal.makeMove(coordinates[0], coordinates[1]))
                 {
-                    terminal.writeBock("That location is not on the board. Please try again.");
+                    terminal.writeBock("That is not a valid move. Please try again.");
                     coordinates = terminal.getPair("Where would you like to move?");
                 }
             } while (stillPlaying);

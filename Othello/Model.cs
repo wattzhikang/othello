@@ -207,7 +207,7 @@ namespace OthelloModel
 			}
 		}
 
-		private bool inBounds(Position position)
+		public bool inBounds(Position position)
 		{
 			if (position.getX() < xLength
 				&& position.getY() < yLength
@@ -295,9 +295,121 @@ namespace OthelloModel
 			return null;
 		}
 
+		enum Direction
+		{
+			UP,
+			UPRIGHT,
+			RIGHT,
+			DOWNRIGHT,
+			DOWN,
+			DOWNLEFT,
+			LEFT,
+			UPLEFT
+		}
+
+		private static Position getDirection(Position position, Direction direction)
+		{
+			switch (direction)
+			{
+				case Direction.UP:
+					return new Position(position.getX(), position.getY() + 1);
+				case Direction.UPRIGHT:
+					return new Position(position.getX() + 1, position.getY() + 1);
+				case Direction.RIGHT:
+					return new Position(position.getX() + 1, position.getY());
+				case Direction.DOWNRIGHT:
+					return new Position(position.getX() + 1, position.getY() - 1);
+				case Direction.DOWN:
+					return new Position(position.getX(), position.getY() - 1);
+				case Direction.DOWNLEFT:
+					return new Position(position.getX() - 1, position.getY() - 1);
+				case Direction.LEFT:
+					return new Position(position.getX() - 1, position.getY());
+				case Direction.UPLEFT:
+				default:
+					return new Position(position.getX() - 1, position.getY() + 1);
+			}
+		}
+
+		private static Player getOpposite(Player player)
+		{
+			return (player == Player.HUMAN) ? Player.COMPUTER : Player.HUMAN;
+		}
+
+		//returns false if it runs into an unoccupied square or the boundary
+		private static bool lineToOpponent(
+			GameState game,
+			Position position,
+			Direction direction,
+			Player player,
+			bool foundInterveningPiece
+		) {
+			if (!game.inBounds(position) || game.getOccupier(position) == Player.UNOCCUPIED)
+			{
+				return false;
+			}
+			else if (game.getOccupier(position) == player)
+			{
+				//you found a valid endpoint. Now it just depends on whether or not you
+				//found a trapped pieces
+				return foundInterveningPiece;
+			}
+			else
+			{
+				return lineToOpponent
+				(
+					game,
+					getDirection(position, direction),
+					direction,
+					player,
+					(game.getOccupier(position) == getOpposite(player) || foundInterveningPiece)
+				);
+			}
+		}
+
 		public static bool isValid(GameState game, Move move)
 		{
-			return true;
+			if (!game.inBounds(move.getPosition()))
+			{
+				return false;
+			}
+
+			Position position = move.getPosition();
+			Player player = move.getPlayer();
+			if (lineToOpponent(game, getDirection(position, Direction.UP), Direction.UP, player, false))
+			{
+				return true;
+			}
+			if (lineToOpponent(game, getDirection(position, Direction.UPRIGHT), Direction.UPRIGHT, player, false))
+			{
+				return true;
+			}
+			if (lineToOpponent(game, getDirection(position, Direction.RIGHT), Direction.RIGHT, player, false))
+			{
+				return true;
+			}
+			if (lineToOpponent(game, getDirection(position, Direction.DOWNRIGHT), Direction.DOWNRIGHT, player, false))
+			{
+				return true;
+			}
+			if (lineToOpponent(game, getDirection(position, Direction.DOWN), Direction.DOWN, player, false))
+			{
+				return true;
+			}
+			if (lineToOpponent(game, getDirection(position, Direction.DOWNLEFT), Direction.DOWNLEFT, player, false))
+			{
+				return true;
+			}
+			if (lineToOpponent(game, getDirection(position, Direction.LEFT), Direction.LEFT, player, false))
+			{
+				return true;
+			}
+			if (lineToOpponent(game, getDirection(position, Direction.UPLEFT), Direction.UPLEFT, player, false))
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		public static GameState result(GameState game, Move move)
