@@ -159,6 +159,16 @@ namespace OthelloModel
 			addMove(nextMove);
 		}
 
+		public GameState(GameState previousState, List<Move> nextMoves)
+		{
+			copyPreviousState(previousState);
+
+			foreach (Move move in nextMoves)
+			{
+				addMove(move);
+			}
+		}
+
 		public GameState(GameState previousState, Move[] nextMoves)
 		{
 			copyPreviousState(previousState);
@@ -412,9 +422,99 @@ namespace OthelloModel
 			return false;
 		}
 
+		private static List<Move> flipTiles(GameState game, Position position, Direction direction, List<Move> moveList, Player player)
+		{
+			if (!game.inBounds(position) || game.getOccupier(position) == Player.UNOCCUPIED)
+			{
+				return moveList;
+			}
+
+			if (game.getOccupier(position) == player)
+			{
+				//I know it's redundant, but it doesn't add much complexity
+				moveList.Add(new Move(position, player));
+				return moveList;
+			}
+
+			flipTiles(game, getDirection(position, direction), direction, moveList, player);
+			if (moveList.Count > 0)
+			{
+				moveList.Add(new Move(position, player));
+			}
+			return moveList;
+		}
+
 		public static GameState result(GameState game, Move move)
 		{
-			return new GameState(game, move);
+			if (isValid(game, move))
+			{
+				List<Move> nextMoves = new List<Move>();
+
+				nextMoves.Add(move);
+
+				nextMoves.AddRange(flipTiles(
+					game,
+					getDirection(move.getPosition(), Direction.UP),
+					Direction.UP,
+					new List<Move>(),
+					move.getPlayer()
+				));
+				nextMoves.AddRange(flipTiles(
+					game,
+					getDirection(move.getPosition(), Direction.UPRIGHT),
+					Direction.UPRIGHT,
+					new List<Move>(),
+					move.getPlayer()
+				));
+				nextMoves.AddRange(flipTiles(
+					game,
+					getDirection(move.getPosition(), Direction.RIGHT),
+					Direction.RIGHT,
+					new List<Move>(),
+					move.getPlayer()
+				));
+				nextMoves.AddRange(flipTiles(
+					game,
+					getDirection(move.getPosition(), Direction.DOWNRIGHT),
+					Direction.DOWNRIGHT,
+					new List<Move>(),
+					move.getPlayer()
+				));
+				nextMoves.AddRange(flipTiles(
+					game,
+					getDirection(move.getPosition(), Direction.DOWN),
+					Direction.DOWN,
+					new List<Move>(),
+					move.getPlayer()
+				));
+				nextMoves.AddRange(flipTiles(
+					game,
+					getDirection(move.getPosition(), Direction.DOWNLEFT),
+					Direction.DOWNLEFT,
+					new List<Move>(),
+					move.getPlayer()
+				));
+				nextMoves.AddRange(flipTiles(
+					game,
+					getDirection(move.getPosition(), Direction.LEFT),
+					Direction.LEFT,
+					new List<Move>(),
+					move.getPlayer()
+				));
+				nextMoves.AddRange(flipTiles(
+					game,
+					getDirection(move.getPosition(), Direction.UPLEFT),
+					Direction.UPLEFT,
+					new List<Move>(),
+					move.getPlayer()
+				));
+
+				return new GameState(game, nextMoves);
+			}
+			else
+			{
+				return null;
+			}
 		}
 	}
 
@@ -431,7 +531,7 @@ namespace OthelloModel
 		{
 			if (GameLogic.isValid(tmpHead, move))
 			{
-				return (tmpHead = new GameState(tmpHead, move));
+				return (tmpHead = GameLogic.result(tmpHead, move));
 			}
 			else
 			{
