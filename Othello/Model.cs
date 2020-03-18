@@ -300,9 +300,32 @@ namespace OthelloModel
 
 			return game;
 		}
+
 		public static List<Move> allValidMoves(GameState game, Player player)
 		{
-			return null;
+			Direction[] directions = { 
+				Direction.UP, Direction.UPRIGHT, Direction.RIGHT,
+				Direction.DOWNRIGHT, Direction.DOWN, Direction.DOWNLEFT,
+				Direction.LEFT, Direction.UPLEFT, Direction.UP
+			};
+
+			List<Move> validMoves = new List<Move>();
+
+			List<Position> playerPositions = game.allPlayerLocations(getOpposite(player));
+
+			foreach (Position position in playerPositions)
+			{
+				foreach (Direction direction in directions)
+				{
+					Move potentialNewMove = new Move(getDirection(position, direction), player);
+					if (isValid(game, potentialNewMove) && !validMoves.Contains(potentialNewMove))
+					{
+						validMoves.Add(potentialNewMove);
+					}
+				}
+			}
+
+			return validMoves;
 		}
 
 		enum Direction
@@ -379,7 +402,7 @@ namespace OthelloModel
 
 		public static bool isValid(GameState game, Move move)
 		{
-			if (!game.inBounds(move.getPosition()))
+			if (!game.inBounds(move.getPosition()) || game.getOccupier(move.getPosition()) != Player.UNOCCUPIED)
 			{
 				return false;
 			}
@@ -531,7 +554,15 @@ namespace OthelloModel
 		{
 			if (GameLogic.isValid(tmpHead, move))
 			{
-				return (tmpHead = GameLogic.result(tmpHead, move));
+				tmpHead = GameLogic.result(tmpHead, move);
+
+				List<Move> validMoves = GameLogic.allValidMoves(tmpHead, Player.COMPUTER);
+				if (validMoves.Count > 0)
+				{
+					tmpHead = GameLogic.result(tmpHead, validMoves[0]);
+				}
+
+				return tmpHead;
 			}
 			else
 			{
