@@ -579,6 +579,8 @@ namespace OthelloModel
 	{
 		private Tree<Move, GameState> gameTree;
 
+		private Queue<GameState> frameBuffer;
+
 		public HAL9000()
 		{
 			gameTree = new Tree<Move, GameState>(GameLogic.initialState());
@@ -588,6 +590,9 @@ namespace OthelloModel
 			{
 				gameTree.addPath(new Path<Move>(move), GameLogic.result(gameTree.retrieveHead(), move));
 			}
+
+			frameBuffer = new Queue<GameState>();
+			frameBuffer.Enqueue(gameTree.retrieveHead());
 		}
 
 		public bool makeMove(int x, int y)
@@ -595,6 +600,8 @@ namespace OthelloModel
 			Path<Move> humanMove = new Path<Move>(new Move(new Position(x, y), Player.HUMAN));
 			if (gameTree.setPath(humanMove))
 			{
+				frameBuffer.Enqueue(gameTree.retrieveHead());
+
 				//for now, perform AI operations here
 
 				//get all the valid moves for the computer
@@ -610,6 +617,8 @@ namespace OthelloModel
 						GameLogic.largerComputerScore(gameTree.getPath(new Path<Move>(x1)), gameTree.getPath(new Path<Move>(x2)))
 				);
 				gameTree.setPath(new Path<Move>(computerMoves[0]));
+
+				frameBuffer.Enqueue(gameTree.retrieveHead());
 
 				//add the next possibilities for the human
 				List<Move> potentialHumanMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.HUMAN);
@@ -628,7 +637,17 @@ namespace OthelloModel
 
 		public GameState currentState()
 		{
-			return gameTree.retrieveHead();
+			return frameBuffer.Peek();
+		}
+
+		public GameState dequeueState()
+		{
+			return frameBuffer.Dequeue();
+		}
+
+		public bool hasNextFrame()
+		{
+			return frameBuffer.Count > 0;
 		}
 	}
 }

@@ -67,7 +67,10 @@ namespace Othello
             bool stillPlaying = true;
             do
             {
-                terminal.writeBock(render(hal.currentState()));
+                while (hal.hasNextFrame())
+                {
+                    terminal.writeBock(render(hal.dequeueState()));
+                }
 
                 NumPair coordinates = terminal.getPair("Where would you like to move?");
                 while (!hal.makeMove(coordinates[0], coordinates[1]))
