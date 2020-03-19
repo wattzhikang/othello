@@ -2,6 +2,8 @@
 using System;
 using System.Linq;
 
+using Tree;
+
 namespace OthelloModel
 {
 	class Position : IComparable, ICloneable
@@ -265,6 +267,20 @@ namespace OthelloModel
 					throw new NotImplementedException("The ability to get all unoccupied locations is not implemented.");
 			}
 			return toReturn;
+		}
+
+		public int getNumPieces(Player player)
+		{
+			switch (player)
+			{
+				case Player.HUMAN:
+					return humanPieces.Count;
+				case Player.COMPUTER:
+					return computerPieces.Count;
+				case Player.UNOCCUPIED:
+				default:
+					return xLength * yLength - (humanPieces.Count + computerPieces.Count);
+			}
 		}
 
 		public Player this[int x, int y]
@@ -539,57 +555,69 @@ namespace OthelloModel
 				return null;
 			}
 		}
-	}
 
-	class GameTree
-	{
-		GameState tmpHead;
-
-		public GameTree(GameState nHead)
+		public static int getScore(GameState game, Player player)
 		{
-			tmpHead = nHead;
+			return game.getNumPieces(player);
 		}
 
-		public GameState selectPath(Move move)
+		public static int largerHumanScore(GameState state1, GameState state2)
 		{
-			if (GameLogic.isValid(tmpHead, move))
-			{
-				tmpHead = GameLogic.result(tmpHead, move);
-
-				List<Move> validMoves = GameLogic.allValidMoves(tmpHead, Player.COMPUTER);
-				if (validMoves.Count > 0)
-				{
-					tmpHead = GameLogic.result(tmpHead, validMoves[0]);
-				}
-
-				return tmpHead;
-			}
-			else
-			{
-				return null;
-			}
+			return getScore(state1, Player.HUMAN).CompareTo(getScore(state2, Player.HUMAN));
 		}
 
-		public GameState getHead()
+		public static int largerComputerScore(GameState state1, GameState state2)
 		{
-			return tmpHead;
+			return getScore(state1, Player.COMPUTER).CompareTo(getScore(state2, Player.COMPUTER));
 		}
 	}
 
+	/*
+	 * Coordinates the AI threads, the game tree, and the Controller
+	*/
 	class HAL9000
 	{
-		private GameTree game;
+		private Tree<Move, GameState> gameTree;
 
 		public HAL9000()
 		{
-			game = new GameTree(GameLogic.initialState());
+			gameTree = new Tree<Move, GameState>(GameLogic.initialState());
+
+			List<Move> potentialHumanMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.HUMAN);
+			foreach (Move move in potentialHumanMoves)
+			{
+				gameTree.addPath(new Path<Move>(move), GameLogic.result(gameTree.retrieveHead(), move));
+			}
 		}
 
 		public bool makeMove(int x, int y)
 		{
-			Move move = new Move(new Position(x, y), Player.HUMAN);
-			if (game.selectPath(move) != null)
+			Path<Move> humanMove = new Path<Move>(new Move(new Position(x, y), Player.HUMAN));
+			if (gameTree.setPath(humanMove))
 			{
+				//for now, perform AI operations here
+
+				//get all the valid moves for the computer
+				List<Move> computerMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.COMPUTER);
+				foreach (Move computerMove in computerMoves)
+				{
+					gameTree.addPath(new Path<Move>(computerMove), GameLogic.result(gameTree.retrieveHead(), computerMove));
+				}
+
+				//pick the best next move
+				computerMoves.Sort(
+					(x1, x2) =>
+						GameLogic.largerComputerScore(gameTree.getPath(new Path<Move>(x1)), gameTree.getPath(new Path<Move>(x2)))
+				);
+				gameTree.setPath(new Path<Move>(computerMoves[0]));
+
+				//add the next possibilities for the human
+				List<Move> potentialHumanMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.HUMAN);
+				foreach (Move move in potentialHumanMoves)
+				{
+					gameTree.addPath(new Path<Move>(move), GameLogic.result(gameTree.retrieveHead(), move));
+				}
+
 				return true;
 			}
 			else
@@ -600,7 +628,7 @@ namespace OthelloModel
 
 		public GameState currentState()
 		{
-			return game.getHead();
+			return gameTree.retrieveHead();
 		}
 	}
 }
