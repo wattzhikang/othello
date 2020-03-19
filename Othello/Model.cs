@@ -602,29 +602,54 @@ namespace OthelloModel
 			{
 				frameBuffer.Enqueue(gameTree.retrieveHead());
 
-				//for now, perform AI operations here
-
-				//get all the valid moves for the computer
-				List<Move> computerMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.COMPUTER);
-				foreach (Move computerMove in computerMoves)
+				//if computer cannot make a move, return straight back to the human
+				List<Move> potentialComputerMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.COMPUTER);
+				if (potentialComputerMoves.Count <= 0)
 				{
-					gameTree.addPath(new Path<Move>(computerMove), GameLogic.result(gameTree.retrieveHead(), computerMove));
+					//don't forget to add in potential human moves
+					List<Move> nextHumanMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.HUMAN);
+					foreach (Move nextHumanMove in nextHumanMoves)
+					{
+						gameTree.addPath(
+							new Path<Move>(nextHumanMove),
+							GameLogic.result(gameTree.retrieveHead(), nextHumanMove)
+						);
+					}
+
+					return true;
 				}
-
-				//pick the best next move
-				computerMoves.Sort(
-					(x1, x2) =>
-						GameLogic.largerComputerScore(gameTree.getPath(new Path<Move>(x1)), gameTree.getPath(new Path<Move>(x2)))
-				);
-				gameTree.setPath(new Path<Move>(computerMoves[0]));
-
-				frameBuffer.Enqueue(gameTree.retrieveHead());
-
-				//add the next possibilities for the human
-				List<Move> potentialHumanMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.HUMAN);
-				foreach (Move move in potentialHumanMoves)
+				else
 				{
-					gameTree.addPath(new Path<Move>(move), GameLogic.result(gameTree.retrieveHead(), move));
+					//otherwise, the computer will move until the human is able to
+					List<Move> potentialHumanMoves;
+					do
+					{
+						foreach (Move potentialComputerMove in potentialComputerMoves)
+						{
+							gameTree.addPath(
+								new Path<Move>(potentialComputerMove),
+								GameLogic.result(gameTree.retrieveHead(), potentialComputerMove)
+							);
+						}
+
+						potentialComputerMoves.Sort(
+							(x1, x2) =>
+								GameLogic.largerComputerScore(gameTree.getPath(new Path<Move>(x1)), gameTree.getPath(new Path<Move>(x2)))
+						);
+						gameTree.setPath(new Path<Move>(potentialComputerMoves[0]));
+
+						frameBuffer.Enqueue(gameTree.retrieveHead());
+
+						potentialHumanMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.HUMAN);
+					} while (potentialHumanMoves.Count <= 0);
+
+					foreach (Move potentialHumanMove in potentialHumanMoves)
+					{
+						gameTree.addPath(
+							new Path<Move>(potentialHumanMove),
+							GameLogic.result(gameTree.retrieveHead(), potentialHumanMove)
+						);
+					}
 				}
 
 				return true;
@@ -632,6 +657,60 @@ namespace OthelloModel
 			else
 			{
 				return false;
+			}
+
+
+			//Path<Move> humanMove = new Path<Move>(new Move(new Position(x, y), Player.HUMAN));
+			//if (gameTree.setPath(humanMove))
+			//{
+			//	frameBuffer.Enqueue(gameTree.retrieveHead());
+
+			//	//for now, perform AI operations here
+
+			//	makeComputerMove();
+
+
+			//	//add the next possibilities for the human
+			//	List<Move> potentialHumanMoves;
+			//	do
+			//	{
+			//		potentialHumanMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.HUMAN);
+			//		foreach (Move move in potentialHumanMoves)
+			//		{
+			//			gameTree.addPath(new Path<Move>(move), GameLogic.result(gameTree.retrieveHead(), move));
+			//		}
+
+			//		if (potentialHumanMoves.Count <= 0)
+			//		{
+			//			makeComputerMove();
+			//		}
+			//	} while (potentialHumanMoves.Count <= 0);
+			//	return true;
+			//}
+			//else
+			//{
+			//	return false;
+			//}
+		}
+
+		private void makeComputerMove()
+		{
+			//get all the valid moves for the computer
+			List<Move> computerMoves = GameLogic.allValidMoves(gameTree.retrieveHead(), Player.COMPUTER);
+			foreach (Move computerMove in computerMoves)
+			{
+				gameTree.addPath(new Path<Move>(computerMove), GameLogic.result(gameTree.retrieveHead(), computerMove));
+			}
+
+			if (computerMoves.Count > 0)
+			{
+				computerMoves.Sort(
+					(x1, x2) =>
+						GameLogic.largerComputerScore(gameTree.getPath(new Path<Move>(x1)), gameTree.getPath(new Path<Move>(x2)))
+				);
+				gameTree.setPath(new Path<Move>(computerMoves[0]));
+
+				frameBuffer.Enqueue(gameTree.retrieveHead());
 			}
 		}
 
